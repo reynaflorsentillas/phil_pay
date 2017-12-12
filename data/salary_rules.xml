@@ -1,0 +1,639 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="salary_structure_bi_monthly" model="hr.payroll.structure">
+            <field name="name">Salary Structure Bi-Monthly</field>
+            <field name="code">BASIC_BI_M</field>
+        </record>
+
+        <record id="salary_structure_daily" model="hr.payroll.structure">
+            <field name="name">Salary Structure Daily</field>
+            <field name="code">BASIC_BI_D</field>
+        </record>  
+<!--
+        <record id="salary_structure_backpay_monthly" model="hr.payroll.structure">
+            <field name="name">Salary Structure Backpay Monthly</field>
+            <field name="code">BASIC_BI_BCK_M</field>
+        </record>  
+
+        <record id="salary_structure_backpay_daily" model="hr.payroll.structure">
+            <field name="name">Salary Structure Backpay Daily</field>
+            <field name="code">BASIC_BI_BCK_D</field>
+        </record> 
+-->
+
+        <record id="salary_structure_13th_month" model="hr.payroll.structure">
+            <field name="name">Salary Structure 13th Month</field>
+            <field name="code">PAY_13TH</field>
+        </record>  
+    </data>
+
+
+    <data noupdate="0">
+        <record id="salary_othe_income" model="hr.salary.rule.category">
+            <field name="name">Other Income</field>
+            <field name="code">OTH_INC</field>
+        </record>
+        <record id="salary_loan_deduc" model="hr.salary.rule.category">
+            <field name="name">Loan Deduction</field>
+            <field name="code">LN_DED</field>
+        </record>            
+    </data>
+
+    <data noupdate="0">
+        <record id="salary_rules_basic_daily" model="hr.salary.rule">
+            <field name="name">Basic BI-Monthly</field>
+            <field name="code">BASIC_BI_MONTHLY</field>
+            <field name="sequence">1</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('hr_payroll.BASIC')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Bi Monthly Rate</field>
+            <field name="amount_python_compute">result=(contract.wage/2)</field>
+        </record>
+
+        <record id="salary_rules_basic_daily_2" model="hr.salary.rule">
+            <field name="name">Basic Daily</field>
+            <field name="code">BASIC_DAILY</field>
+            <field name="sequence">1</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('hr_payroll.BASIC')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Bi Monthly Rate</field>
+            <field name="amount_python_compute">result=(contract.wage/30) * inputs.REGDAYS.amount</field>
+        </record>        
+
+        <record id="salary_rules_basic_daily_13" model="hr.salary.rule">
+            <field name="name">Total Basic</field>
+            <field name="code">BASIC_13TH</field>
+            <field name="sequence">1</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('hr_payroll.BASIC')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation Basic Rate 13th Month Bonus</field>
+            <field name="amount_python_compute">result=(contract.wage/30) * inputs.REGDAYS.amount</field>
+        </record>     
+
+
+        <record id="salary_rules_absent_13th" model="hr.salary.rule">
+            <field name="name">Total Absences</field>
+            <field name="code">ABSENT_13TH</field>
+            <field name="sequence">2</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('hr_payroll.DED')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Absences 13th Month Bonus</field>
+            <field name="amount_python_compute">result=(contract.wage/30) * inputs.Absent.amount</field>
+        </record>
+
+        <record id="salary_rules_latesut_13th" model="hr.salary.rule">
+            <field name="name">Total Lates/Undertime</field>
+            <field name="code">LT_UT_13TH</field>
+            <field name="sequence">2</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('hr_payroll.DED')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Lates 13th Month Bonus</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8)) * inputs.Lates.amount</field>
+        </record>
+
+
+        <record id="salary_rules_net_13th" model="hr.salary.rule">
+            <field name="name">Net Pay</field>
+            <field name="code">NET_PAY_13TH</field>
+            <field name="sequence">3</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('hr_payroll.NET')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Net 13th Month Bonus</field>
+            <field name="amount_python_compute">result=(categories.BASIC + ((categories.DED *-1)))/12</field>
+        </record>
+
+    </data>
+
+
+
+    <data noupdate="0">
+
+        <!-- OTHER INCOMES -->
+        <record id="salary_rules_restday" model="hr.salary.rule">
+            <field name="name">Restday</field>
+            <field name="code">REST_DAY</field>
+            <field name="sequence">2</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Rest Day</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *1.3) * inputs.RD.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record> 
+
+        <record id="salary_rules_spec_hol" model="hr.salary.rule">
+            <field name="name">Special Holiday</field>
+            <field name="code">SPEC_DAY</field>
+            <field name="sequence">3</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Special Holiday Day</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *1.3) * inputs.RD.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record> 
+
+        <record id="salary_rules_rest_spec_hol" model="hr.salary.rule">
+            <field name="name">Rest Day Special Holiday</field>
+            <field name="code">REST_SPEC_DAY</field>
+            <field name="sequence">3</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Special Holiday Day</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *1.5) * inputs.RDSH.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record> 
+
+        <record id="salary_rules_reg_hol" model="hr.salary.rule">
+            <field name="name">Regular Holiday</field>
+            <field name="code">REG_DAY</field>
+            <field name="sequence">4</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Special Holiday Day</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *2) * inputs.RH.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record> 
+
+        <record id="salary_rules_rest_reg_hol" model="hr.salary.rule">
+            <field name="name">Rest Day Regular Holiday</field>
+            <field name="code">REST_REG_DAY</field>
+            <field name="sequence">5</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Special Holiday Day</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *2.6) * inputs.RDRH.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record> 
+
+        <record id="salary_rules_dbl_hol" model="hr.salary.rule">
+            <field name="name">Double Holiday</field>
+            <field name="code">DBLH_DAY</field>
+            <field name="sequence">6</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Special Holiday Day</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *3) * inputs.DH.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>         
+
+        <record id="salary_rules_rest_dbl_hol" model="hr.salary.rule">
+            <field name="name">Rest Day Double Holiday</field>
+            <field name="code">REST_DBLH_DAY</field>
+            <field name="sequence">7</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Special Holiday Day</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *3) * inputs.RDDH.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>       
+
+        <record id="salary_rules_overtime" model="hr.salary.rule">
+            <field name="name">Regular Overtime</field>
+            <field name="code">REG_DAY_OT</field>
+            <field name="sequence">8</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *1.25) * inputs.OT.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>            
+
+        <record id="salary_rules_res_overtime" model="hr.salary.rule">
+            <field name="name">Rest day Overtime</field>
+            <field name="code">REST_DAY_OT</field>
+            <field name="sequence">9</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *1.69) * inputs.RDOT.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>      
+
+        <record id="salary_rules_spec_overtime" model="hr.salary.rule">
+            <field name="name">Special Holiday Overtime</field>
+            <field name="code">SPEC_DAY_OT</field>
+            <field name="sequence">10</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *1.69) * inputs.SHOT.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>     
+
+        <record id="salary_rules_spec_rest_overtime" model="hr.salary.rule">
+            <field name="name">Special Holiday Restday Overtime</field>
+            <field name="code">SPEC_REST_DAY_OT</field>
+            <field name="sequence">11</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *1.95) * inputs.SDRDOT.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>             
+
+        <record id="salary_rules_reg_hol_overtime" model="hr.salary.rule">
+            <field name="name">Regular Holiday Overtime</field>
+            <field name="code">REGH_DAY_OT</field>
+            <field name="sequence">12</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *2.60) * inputs.RHOT.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>     
+
+        <record id="salary_rules_reg_hol_res_overtime" model="hr.salary.rule">
+            <field name="name">Regular Holiday Restday Overtime</field>
+            <field name="code">REGH_REST_DAY_OT</field>
+            <field name="sequence">13</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *3.38) * inputs.RHRDOT.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>     
+
+        <record id="salary_rules_dbl_hol_overtime" model="hr.salary.rule">
+            <field name="name">Double Holiday Overtime</field>
+            <field name="code">REGH_DBL_DAY_OT</field>
+            <field name="sequence">14</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *3.90) * inputs.DHOT.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>   
+
+        <record id="salary_rules_dbl_res_hol_overtime" model="hr.salary.rule">
+            <field name="name">Double Holiday Restday Overtime</field>
+            <field name="code">REGH_DBL_REST_DAY_OT</field>
+            <field name="sequence">15</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) *5.07) * inputs.DHRDOT.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>   
+
+
+        <!-- Night Shift -->
+
+        <record id="salary_rules_reg_ndiff" model="hr.salary.rule">
+            <field name="name">Regular Night Differential</field>
+            <field name="code">REG_NDIFF</field>
+            <field name="sequence">16</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) * 1.1) * inputs.NS.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>           
+
+        <record id="salary_rules_rest_ndiff" model="hr.salary.rule">
+            <field name="name">Rest Day Night Differential</field>
+            <field name="code">REST_NDIFF</field>
+            <field name="sequence">17</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) * 1.43) * inputs.RDNS.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>  
+
+
+        <record id="salary_rules_spec_ndiff" model="hr.salary.rule">
+            <field name="name">Special Holiday Night Differential</field>
+            <field name="code">SPEC_NDIFF</field>
+            <field name="sequence">18</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) * 1.43) * inputs.SDNS.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>  
+
+        <record id="salary_rules_spec_rest_ndiff" model="hr.salary.rule">
+            <field name="name">Special Holiday Rest Day Night Differential</field>
+            <field name="code">REST_SPEC_NDIFF</field>
+            <field name="sequence">19</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) * 1.65) * inputs.SDRDNS.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>  
+
+
+        <record id="salary_rules_regh_rest_ndiff" model="hr.salary.rule">
+            <field name="name">Regular Holiday Night Differential</field>
+            <field name="code">REGH_NDIFF</field>
+            <field name="sequence">20</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) * 2.20) * inputs.RHNS.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>          
+
+
+        <record id="salary_rules_rest_regh_rest_ndiff" model="hr.salary.rule">
+            <field name="name">Regular Holiday Rest Day Night Differential</field>
+            <field name="code">RES_REGH_NDIFF</field>
+            <field name="sequence">21</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) * 2.86) * inputs.RHRDNS.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record> 
+
+        <record id="salary_rules_dblh_ndiff" model="hr.salary.rule">
+            <field name="name">Double Holiday Night Differential</field>
+            <field name="code">DBLH_NDIFF</field>
+            <field name="sequence">22</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) * 3.3) * inputs.DHNS.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record> 
+
+        <record id="salary_rules_dblh_rest_ndiff" model="hr.salary.rule">
+            <field name="name">Double Holiday Rest Day Night Differential</field>
+            <field name="code">DBLH_REST_NDIFF</field>
+            <field name="sequence">23</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Overtime</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8) * 4.29) * inputs.DHRDNS.amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record> 
+
+        <record id="salary_rules_deductions" model="hr.salary.rule">
+            <field name="name">Deductions</field>
+            <field name="code">DED</field>
+            <field name="sequence">24</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('hr_payroll.DED')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Summary of Deduction</field>
+            <field name="amount_python_compute">result=categories.DED</field>
+        </record>
+
+        <record id="salary_rules_absent" model="hr.salary.rule">
+            <field name="name">Absences</field>
+            <field name="code">ABSENT</field>
+            <field name="sequence">25</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('hr_payroll.DED')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Absences</field>
+            <field name="amount_python_compute">result=(contract.wage/30) * inputs.Absent.amount</field>
+        </record>
+
+        <record id="salary_rules_latesut" model="hr.salary.rule">
+            <field name="name">Lates/Undertime</field>
+            <field name="code">LT_UT</field>
+            <field name="sequence">26</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('hr_payroll.DED')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Lates</field>
+            <field name="amount_python_compute">result=(((contract.wage/30)/8)) * inputs.Lates.amount</field>
+        </record>
+
+        <record id="salary_rules_sss" model="hr.salary.rule">
+            <field name="name">SSS Contribution</field>
+            <field name="code">SSS_CONTRI</field>
+            <field name="sequence">27</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('hr_payroll.DED')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of SSSS</field>
+            <field name="amount_python_compute">result=round(contract.sss_contri/2,1)</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>
+
+        <record id="salary_rules_pagibig" model="hr.salary.rule">
+            <field name="name">Pagibig Contribution</field>
+            <field name="code">PAG_CONTRI</field>
+            <field name="sequence">28</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('hr_payroll.DED')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Pagibig</field>
+            <field name="amount_python_compute">result=round(contract.pagibig_contri/2,1)</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>
+
+        <record id="salary_rules_phic" model="hr.salary.rule">
+            <field name="name">Philhealth Contribution</field>
+            <field name="code">PHC_CONTRI</field>
+            <field name="sequence">29</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('hr_payroll.DED')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of PhilHealth</field>
+            <field name="amount_python_compute">result=round(contract.phic_contri/2,1)</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>
+
+
+        <record id="salary_rules_tax" model="hr.salary.rule">
+            <field name="name">Tax Withheld</field>
+            <field name="code">TAX_WTH_PHP</field>
+            <field name="sequence">39</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('hr_payroll.DED')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Tax</field>
+            <field name="amount_python_compute">result=0 if contract.is_mwe else payslip.tax_amount</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>    
+
+        <record id="salary_rules_convert_leaves" model="hr.salary.rule">
+            <field name="name">Convert Leaves to Cash</field>
+            <field name="code">CONV_LEAVES</field>
+            <field name="sequence">40</field>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_othe_income')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Tax</field>
+            <field name="amount_python_compute">result=employee.remaining_leaves * (((contract.wage/30))) if payslip.convert_leaves == True else 0</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>    
+
+
+        <record id="salary_rules_loan_sss" model="hr.salary.rule">
+            <field name="name">SSS Loans</field>
+            <field name="code">SSS_LOANS</field>
+            <field name="sequence">41</field>
+            <field name="condition_select">none</field>
+            <field name="is_loan_rule" eval="True"/>
+            <field name="category_id" eval="ref('salary_loan_deduc')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Loans</field>
+            <field name="amount_python_compute">result=0</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>    
+
+
+        <record id="salary_rules_loan_pagibig" model="hr.salary.rule">
+            <field name="name">Pag-ibig Loans</field>
+            <field name="code">PAG_LOANS</field>
+            <field name="sequence">42</field>
+            <field name="is_loan_rule" eval="True"/>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_loan_deduc')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Loans</field>
+            <field name="amount_python_compute">result=0</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>    
+
+
+        <record id="salary_rules_loan_cash_advance" model="hr.salary.rule">
+            <field name="name">Cash Advance</field>
+            <field name="code">CASH_ADV</field>
+            <field name="sequence">43</field>
+            <field name="is_loan_rule" eval="True"/>
+            <field name="condition_select">none</field>
+            <field name="category_id" eval="ref('salary_loan_deduc')"/>
+            <field name="amount_select">code</field>
+            <field name="note">Computation of Loans</field>
+            <field name="amount_python_compute">result=0</field>
+            <field name="register_id" eval="ref('hr_payroll.contrib_register_employees')"/>
+        </record>  
+
+        <record id="hr_payroll.hr_rule_net" model="hr.salary.rule">
+            <field name="amount_python_compute">result = categories.BASIC + categories.OTH_INC + categories.ALW + ((categories.DED *-1) + (categories.LN_DED *-1))</field>
+        </record>
+
+    </data>
+
+
+    <data noupdate="0">
+        
+        <record id="salary_structure_13th_month" model="hr.payroll.structure">
+            <field name="rule_ids"  eval="[(6,0, [ref('salary_rules_basic_daily_13'),
+                                                  ref('salary_rules_absent_13th'),
+                                                  ref('salary_rules_latesut_13th'),
+                                                  ref('salary_rules_net_13th')])]"/>
+        </record>
+    
+
+
+        <record id="salary_structure_bi_monthly" model="hr.payroll.structure">
+            <field name="rule_ids"  eval="[(6,0, [ref('salary_rules_basic_daily'),
+                                                  ref('salary_rules_absent'),
+                                                  ref('salary_rules_latesut'),
+ref('salary_rules_restday'),
+ref('salary_rules_spec_hol'),
+ref('salary_rules_rest_spec_hol'),
+ref('salary_rules_reg_hol'),
+ref('salary_rules_rest_reg_hol'),
+ref('salary_rules_dbl_hol'),
+ref('salary_rules_rest_dbl_hol'),
+ref('salary_rules_overtime'),
+ref('salary_rules_res_overtime'),
+ref('salary_rules_spec_overtime'),
+ref('salary_rules_spec_rest_overtime'),
+ref('salary_rules_reg_hol_overtime'),
+ref('salary_rules_reg_hol_res_overtime'),
+ref('salary_rules_dbl_hol_overtime'),
+ref('salary_rules_dbl_res_hol_overtime'),
+ref('salary_rules_reg_ndiff'),
+ref('salary_rules_rest_ndiff'),
+ref('salary_rules_spec_ndiff'),
+ref('salary_rules_spec_rest_ndiff'),
+ref('salary_rules_regh_rest_ndiff'),
+ref('salary_rules_rest_regh_rest_ndiff'),
+ref('salary_rules_dblh_ndiff'),
+ref('salary_rules_dblh_rest_ndiff'),
+ref('salary_rules_convert_leaves'),
+ref('salary_rules_loan_sss'),
+ref('salary_rules_loan_pagibig'),
+ref('salary_rules_loan_cash_advance'),                              
+                                                  ref('salary_rules_sss'),
+                                                  ref('salary_rules_pagibig'),
+                                                  ref('salary_rules_phic'),
+                                                  ref('salary_rules_tax'),
+                                                  ref('hr_payroll.hr_rule_net')])]"/>
+        </record>
+
+        <record id="salary_structure_daily" model="hr.payroll.structure">
+            <field name="rule_ids"  eval="[(6,0, [ref('salary_rules_basic_daily_2'),
+                                                  ref('salary_rules_absent'),
+                                                  ref('salary_rules_latesut'),
+    ref('salary_rules_restday'),
+    ref('salary_rules_spec_hol'),
+    ref('salary_rules_rest_spec_hol'),
+    ref('salary_rules_reg_hol'),
+    ref('salary_rules_rest_reg_hol'),
+    ref('salary_rules_dbl_hol'),
+    ref('salary_rules_rest_dbl_hol'),
+    ref('salary_rules_overtime'),
+    ref('salary_rules_res_overtime'),
+    ref('salary_rules_spec_overtime'),
+    ref('salary_rules_spec_rest_overtime'),
+    ref('salary_rules_reg_hol_overtime'),
+    ref('salary_rules_reg_hol_res_overtime'),
+    ref('salary_rules_dbl_hol_overtime'),
+    ref('salary_rules_dbl_res_hol_overtime'),
+    ref('salary_rules_reg_ndiff'),
+    ref('salary_rules_rest_ndiff'),
+    ref('salary_rules_spec_ndiff'),
+    ref('salary_rules_spec_rest_ndiff'),
+    ref('salary_rules_regh_rest_ndiff'),
+    ref('salary_rules_rest_regh_rest_ndiff'),
+    ref('salary_rules_dblh_ndiff'),
+    ref('salary_rules_dblh_rest_ndiff'),
+    ref('salary_rules_convert_leaves'),
+    ref('salary_rules_loan_sss'),
+    ref('salary_rules_loan_pagibig'),
+    ref('salary_rules_loan_cash_advance'),
+                                                  ref('salary_rules_sss'),
+                                                  ref('salary_rules_pagibig'),
+                                                  ref('salary_rules_phic'),
+                                                  ref('salary_rules_tax'),
+                                                  ref('hr_payroll.hr_rule_net')])]"/>
+        </record>        
+    
+    <!--
+        <record id="salary_structure_bi_monthly" model="hr.payroll.structure">
+            <field name="rule_ids"  eval="[(6,0, [ref('salary_rules_basic_daily'),
+                                                  ref('salary_rules_deductions'),
+                                                  ref('hr_payroll.hr_rule_net'),])]"/>
+        </record>    
+    -->
+    </data>        
+</odoo>

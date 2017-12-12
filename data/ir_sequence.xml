@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="sequence_raw_attendance_main" model="ir.sequence">
+            <field name="name">Raw Attendance Uploader</field>
+            <field name="code">attendance.raw.main</field>
+            <field name="prefix">RAW/ATTND/</field>
+            <field eval="1" name="number_next"/>
+            <field eval="1" name="number_increment"/>
+            <field eval="5" name="padding"/>
+            <field eval="False" name="company_id"/>
+        </record>
+
+    </data>
+    <data noupdate="1">
+        <record id="sequence_employee_loans" model="ir.sequence">
+            <field name="name">Employee Loans</field>
+            <field name="code">hr.employee.loans</field>
+            <field name="prefix">LOANS/</field>
+            <field eval="1" name="number_next"/>
+            <field eval="1" name="number_increment"/>
+            <field eval="6" name="padding"/>
+            <field eval="False" name="company_id"/>
+        </record>
+
+    </data>    
+</odoo>

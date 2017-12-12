@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_phi_pay.raw_attendance_list_officer,raw_attendance_list_officer,phil_pay.model_attendance_raw_list,hr.group_hr_user,1,1,1,1
+access_phi_pay.raw_attendance_main_officer,raw_attendance_main_officer,phil_pay.model_attendance_raw_main,hr.group_hr_user,1,1,1,1

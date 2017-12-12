@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+
+        <!-- Price Claim -->
+        <record id="hr_payroll_employee_loans_form" model="ir.ui.view">
+            <field name="name">hr.payroll.employee.loands.form</field>
+            <field name="model">hr.employee.loans</field>
+            <field name="arch" type="xml">
+                <form string="Employee Loans">
+                    <header>
+                        <button name="approve_loan" type="object" states="draft" string="Approved" class="oe_highlight"/>  
+                        <button name="cancel_loan" type="object" states="approved" string="Cancel" class="oe_highlight"/>  
+                        <button name="paid_loan" type="object" states="approved" string="Paid" class="oe_highlight"/>  
+                                        
+                        <field name="state" widget="statusbar" statusbar_visible="draft,approved,cancel" />                    
+                    </header>
+                    <sheet>
+                        <div>
+                            <label string="Draft Loans" attrs="{'invisible': ['|',('state','&lt;&gt;','draft')]}"/>
+                            
+                            <h1 class="mt0">
+                                <field name="name" class="oe_inline" attrs="{'invisible': [('state', 'in', ['approved','cancel', 'paid'])]}" readonly="1"/>
+                            </h1>                          
+                            <h1 class="mt0">
+                                <field name="name" class="oe_inline" attrs="{'invisible': [('state', '=', 'draft')]}"/>
+                            </h1>
+                          
+                        </div>
+                        <group>
+                            <group>
+                                <field name="employee_id" required="1" attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                                <!--
+                                <field name="loan_type" required="1" attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                                <field name="loan_description" attrs="{'invisible': [('loan_type', 'not in', ['other'])], 'readonly': [('state', 'not in', ['draft'])]}"/>
+                                -->
+                                <field name="loan_sal_rule_id" attrs="{'readonly': [('state', 'not in', ['draft'])]}" domain="[('is_loan_rule','=',True)]"/>
+                                
+                                <field name="amortization_amount" attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                                <field name="total_amortization_amount" attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                            </group>
+
+                            <group>
+                                <field name="payroll_cutoff_payment_date" required="1" attrs="{'readonly': [('state', 'not in', ['draft'])]}" /> 
+                                <field name="no_of_payments" required="1" attrs="{'readonly': [('state', 'not in', ['draft'])]}"/> 
+                            </group>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>    
+
+        <record id="hr_payroll_employee_loans_tree" model="ir.ui.view">
+            <field name="name">hr.payroll.employee.loands.tree</field>
+            <field name="model">hr.employee.loans</field>
+            <field name="arch" type="xml">
+                <tree string="Loans">
+                    <field name="name"/>
+                    <field name="loan_type"/>
+                    <field name="loan_description"/>
+                    <field name="amortization_amount" />
+                    <field name="total_amortization_amount" />
+                    <field name="no_of_payments"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="hr_payroll_employee_loans_search" model="ir.ui.view">
+            <field name="name">hr.payroll.employee.loands.search</field>
+            <field name="model">hr.employee.loans</field>
+            <field name="arch" type="xml">
+                <search string="Loans">
+                    <field name="name"/>
+                    <field name="loan_type"/>
+                    <field name="loan_description"/>
+                    <field name="amortization_amount" />
+                    <field name="total_amortization_amount" />
+                    <field name="no_of_payments"/>
+                </search>
+            </field>
+        </record>        
+
+        <record id="action_payroll_employee_loans" model="ir.actions.act_window">
+            <field name="name">Employee Loans</field>
+             <field name="res_model">hr.employee.loans</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field eval="False" name="view_id"/>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>            
+            <field name="search_view_id" ref="hr_payroll_employee_loans_search"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to record a New Loans.
+              </p>
+            </field>
+        </record>     
+
+        <record id="action_payroll_employee_loans_tree" model="ir.actions.act_window.view">
+            <field eval="1" name="sequence"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="hr_payroll_employee_loans_tree"/>
+            <field name="act_window_id" ref="action_payroll_employee_loans"/>
+        </record>
+
+        <record id="action_payroll_employee_loans_form" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="hr_payroll_employee_loans_form"/>
+            <field name="act_window_id" ref="action_payroll_employee_loans"/>
+        </record>           
+    
+
+        <!-- MENU -->
+        <menuitem id="menu_payroll_employee_loans" name="Loans" 
+                  parent="hr.menu_hr_root"
+                  action="action_payroll_employee_loans"
+                  sequence="3"                  
+                  />     
+
+
+    <record id="hr_salary_rule_form_extend" model="ir.ui.view">
+        <field name="name">hr.salary.rule.form.extend</field>
+        <field name="model">hr.salary.rule</field>
+        <field name="inherit_id" ref="hr_payroll.hr_salary_rule_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='appears_on_payslip']" position="after">
+              <field name="is_loan_rule"/>
+            </xpath>
+        </field>
+    </record>                     
+    
+  </data>
+</odoo>

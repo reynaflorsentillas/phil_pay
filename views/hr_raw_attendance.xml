@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--groups="account.group_account_manager,account.group_account_invoice" -->
+ 
+
+        <!--Attendance Log Form -->
+        <record id="view_hr_attendance_log_form" model="ir.ui.view">
+            <field name="name">view.hr.attendance.log.form</field>
+            <field name="model">attendance.raw.main</field>
+            <field name="arch" type="xml">
+                <form string="Attendance Log">
+                    <header>       
+                          <button name="create_raw_attendance" type="object"  string="Import Log File" class="oe_highlight" />  
+                          <button name="create_attendance" type="object"  string="Create Attendance" class="oe_highlight" />  
+                          
+                    </header>                  
+                    <sheet>
+                      <div>                  
+                          <h1 class="mt0">
+                              <field name="name" class="oe_inline" readonly="1"/>
+                          </h1>
+                      </div>                        
+                      <group>
+                        <group>
+                          <!--<field name="name" readonly="1" string="Name"/>-->
+                          <field name="import_file"/>
+                        </group>
+                      </group>
+                      <notebook>
+                        <page string="Attendances">
+                           <field name="attendace_ids" readonly="1">
+                              <tree string="Attendances">   
+                                    <field name="employee_id"/>
+                                    <field name="check_in"/>
+                                     <field name="check_out"/>
+                              </tree>
+                           </field>                          
+                        </page>                        
+                        <page string="Raw Attendance">
+                           <field name="raw_attendance_ids" readonly="1" limit="250">
+                              <tree string="Raw Attendances" limit="250">   
+                                    <field name="name"/>
+                                    <field name="date_logs"/>
+                                    <field name="date_time_logs"/>
+                              </tree>
+                           </field>                              
+                        </page>
+                      </notebook>
+                    </sheet>
+
+                </form>
+            </field>
+        </record>
+
+        <!-- Attendance Log List View -->
+        <record id="view_hr_attendance_log_tree" model="ir.ui.view">
+            <field name="name">view.hr.attendance.log.tree</field>
+            <field name="model">attendance.raw.main</field>
+            <field name="arch" type="xml">
+                <tree string="Attendance Log">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>        
+
+        <record id="open_hr_attendance_log_tre" model="ir.actions.act_window">
+            <field name="name">Attendance Log Uploader</field>
+            <field name="res_model">attendance.raw.main</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_hr_attendance_log_tree"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add a new and generate Attendances thru Uploading a Log File
+              </p>
+            </field>
+        </record>     
+
+        <menuitem id="menu_hr_attendance_log" name="Attendance Log File Uploader" 
+                  parent="hr_attendance.menu_hr_attendance_manage_attendances"
+                   action="open_hr_attendance_log_tre"
+                  sequence="11"     
+                  groups='hr.group_hr_user'           
+                  />       
+    </data>
+</odoo>
