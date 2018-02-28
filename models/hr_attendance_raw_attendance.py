@@ -3,7 +3,7 @@
 from odoo import models, fields, api, _
 import time
 from datetime import datetime, date, timedelta
-from datetime import timezone
+# from datetime import timezone
 from datetime import time as datetime_time
 from dateutil import relativedelta
 import logging

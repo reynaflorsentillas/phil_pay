@@ -73,14 +73,14 @@
           </xpath>
 
 
-          <xpath expr="//page[@name='hr_settings']/group/group[1]/field[@name='user_id']" position="after">
+          <xpath expr="//field[@name='user_id']" position="after">
             <field name="biometric_number"/>
           </xpath>
 
 
 
           <xpath expr="//page[@name='educ']" position="after">
-            <page name="corrective_actions" string="Education" groups="hr.group_hr_user">
+            <page name="corrective_actions" string="Corrective Actions" groups="hr.group_hr_user">
               <field name="ca_ids"> 
                 <tree string="Corrective Actions" editable="top"> 
                   <field name="reason"/>

@@ -3,7 +3,7 @@
 from odoo import models, fields, api
 import time
 from datetime import datetime, date, timedelta
-from datetime import timezone
+# from datetime import timezone
 from datetime import time as datetime_time
 from dateutil import relativedelta
 import logging
@@ -76,7 +76,8 @@ class AttendanceExtension(models.Model):
 			if rec.is_rest_day == False:
 				d1 = fields.Datetime.from_string(rec.check_in)
 				day_of_week = d1.weekday()
-				r = rec.employee_id.contract_id.resource_calendar_id.attendance_ids.search([('dayofweek','=', day_of_week)])
+				# r = rec.employee_id.contract_id.resource_calendar_id.attendance_ids.search([('dayofweek','=', day_of_week)])
+				r = rec.employee_id.contract_id.working_hours.attendance_ids.search([('dayofweek','=', day_of_week)])
 				# check_in_time = d1.time()
 
 				user_tz = self.env.user.tz
@@ -212,7 +213,7 @@ class AttendanceExtension(models.Model):
 			fmt = '%Y-%m-%d %H:%M:%S'
 			d1 = datetime.strptime(rec.check_in, fmt).date()
 			day_of_week = d1.weekday()
-			search_result = rec.employee_id.contract_id.resource_calendar_id.attendance_ids.search_count([('dayofweek','=', day_of_week)])
+			search_result = rec.employee_id.contract_id.working_hours.attendance_ids.search_count([('dayofweek','=', day_of_week)])
 			if search_result != 0:
 				rec.is_rest_day = False
 			else:
@@ -780,7 +781,7 @@ class PayslipComputations(models.Model):
 				is_holiday = True
 			#check if work day
 			day_of_week = d.weekday()
-			search_result = self.contract_id.resource_calendar_id.attendance_ids.search_count([('dayofweek','=', day_of_week)])
+			search_result = self.contract_id.working_hours.attendance_ids.search_count([('dayofweek','=', day_of_week)])
 			if search_result != 0:
 				is_work_day = True
 				if is_holiday == False:
@@ -1301,7 +1302,7 @@ class PayslipComputations(models.Model):
 				#check if work day
 				day_of_week = d.weekday()
 				contract_object = self.env['hr.contract'].search([('id','=', contract_id)])
-				search_result = contract_object.resource_calendar_id.attendance_ids.search_count([('dayofweek','=', day_of_week)])
+				search_result = contract_object.working_hours.attendance_ids.search_count([('dayofweek','=', day_of_week)])
 				if search_result != 0:
 					is_work_day = True
 					if is_holiday == False:
@@ -1333,99 +1334,142 @@ class PayslipComputations(models.Model):
 
 	@api.model
 	def get_tax(self, amount=0.00, employee_id=''):
-		tax_table_exemption = {
-				1: [0, 0],
-				2: [0, .05],
-				3: [20.83,.10],
-				4: [104.17,.15],
-				5: [354.17, .20],
-				6: [937.50, .25],
-				7: [2083.33, .30],
-				8: [5208.33, .32],
-				9: [5208.33, .32],
-		}
-		tax_table = {
-			'S/ME': {
-				1: [1],
-				2: [2083.00],
-				3: [2500.00],
-				4: [3333.00],
-				5: [5000.00],
-				6: [7917.00],
-				7: [12500.00],
-				8: [22917.00],
-				9: [99999999.00],
-			},
-			'S/ME1': {
-				1: [1],
-				2: [3125.00],
-				3: [3542.00],
-				4: [4375.00],
-				5: [6042.00],
-				6: [8958.00],
-				7: [13542.00],
-				8: [23958.00],
-				9: [99999999.00],
-			},
-			'S/ME2': {
-				1: [1],
-				2: [4162.00],
-				3: [4583.00],
-				4: [5417.00],
-				5: [7083.00],
-				6: [10000.00],
-				7: [14583.00],
-				8: [25000.00],
-				9: [99999999.00],
-			},
-			'S/ME3': {
-				1: [1],
-				2: [5208.00],
-				3: [5625.00],
-				4: [6458.00],
-				5: [8125.00],
-				6: [11042.00],
-				7: [15625.00],
-				8: [26042.00],
-				9: [99999999.00],
-			},
-			'S/ME4': {
-				1: [1],
-				2: [6250.00],
-				3: [6667.00],
-				4: [7500.00],
-				5: [9167.00],
-				6: [12083.00],
-				7: [16667.00],
-				8: [27083.00],
-				9: [99999999.00],
-			},
-		}
+		# tax_table_exemption = {
+		# 		1: [0, 0],
+		# 		2: [0, .05],
+		# 		3: [20.83,.10],
+		# 		4: [104.17,.15],
+		# 		5: [354.17, .20],
+		# 		6: [937.50, .25],
+		# 		7: [2083.33, .30],
+		# 		8: [5208.33, .32],
+		# 		9: [5208.33, .32],
+		# }
+		# tax_table = {
+		# 	'S/ME': {
+		# 		1: [1],
+		# 		2: [2083.00],
+		# 		3: [2500.00],
+		# 		4: [3333.00],
+		# 		5: [5000.00],
+		# 		6: [7917.00],
+		# 		7: [12500.00],
+		# 		8: [22917.00],
+		# 		9: [99999999.00],
+		# 	},
+		# 	'S/ME1': {
+		# 		1: [1],
+		# 		2: [3125.00],
+		# 		3: [3542.00],
+		# 		4: [4375.00],
+		# 		5: [6042.00],
+		# 		6: [8958.00],
+		# 		7: [13542.00],
+		# 		8: [23958.00],
+		# 		9: [99999999.00],
+		# 	},
+		# 	'S/ME2': {
+		# 		1: [1],
+		# 		2: [4162.00],
+		# 		3: [4583.00],
+		# 		4: [5417.00],
+		# 		5: [7083.00],
+		# 		6: [10000.00],
+		# 		7: [14583.00],
+		# 		8: [25000.00],
+		# 		9: [99999999.00],
+		# 	},
+		# 	'S/ME3': {
+		# 		1: [1],
+		# 		2: [5208.00],
+		# 		3: [5625.00],
+		# 		4: [6458.00],
+		# 		5: [8125.00],
+		# 		6: [11042.00],
+		# 		7: [15625.00],
+		# 		8: [26042.00],
+		# 		9: [99999999.00],
+		# 	},
+		# 	'S/ME4': {
+		# 		1: [1],
+		# 		2: [6250.00],
+		# 		3: [6667.00],
+		# 		4: [7500.00],
+		# 		5: [9167.00],
+		# 		6: [12083.00],
+		# 		7: [16667.00],
+		# 		8: [27083.00],
+		# 		9: [99999999.00],
+		# 	},
+		# }
 
-		#Check MArital Status
-		stat = 'S/ME'
-		raw_tax = 0.00
-		if employee_id.children > 0:
-			if employee_id.children >=4:
-				stat = stat + '4'
-			else:
-				stat = stat + '' + str(employee_id.children)
-		table_tax_now = tax_table[stat]
-		#raise Warning(table_tax_now)
-		for table in table_tax_now:
+		# #Check MArital Status
+		# stat = 'S/ME'
+		# raw_tax = 0.00
+		# if employee_id.children > 0:
+		# 	if employee_id.children >=4:
+		# 		stat = stat + '4'
+		# 	else:
+		# 		stat = stat + '' + str(employee_id.children)
+		# table_tax_now = tax_table[stat]
+		# #raise Warning(table_tax_now)
+		# for table in table_tax_now:
 
-			if amount < table_tax_now[table][0]:
-				if table_tax_now[table] == 9:
-					raw_tax = round(table_tax_now[8][0] - amount,2)
-				else:
-					#raise Warning(stat)
-					raw_tax = round(amount-table_tax_now[table-1 if table-1 > 0 else 1 ][0],2)
-				_logger.info(tax_table[stat])
-				_logger.info(raw_tax)
-				_logger.info((tax_table_exemption[table-1 if table-1 > 0 else 1][0]))
-				_logger.info((raw_tax * tax_table_exemption[table-1 if table-1 > 0 else 1][1]))
-				final_tax = tax_table_exemption[table-1 if table-1 > 0 else 1][0] + (raw_tax * tax_table_exemption[table-1 if table-1 > 0 else 1][1])		
-				return final_tax
+		# 	if amount < table_tax_now[table][0]:
+		# 		if table_tax_now[table] == 9:
+		# 			raw_tax = round(table_tax_now[8][0] - amount,2)
+		# 		else:
+		# 			#raise Warning(stat)
+		# 			raw_tax = round(amount-table_tax_now[table-1 if table-1 > 0 else 1 ][0],2)
+		# 		_logger.info(tax_table[stat])
+		# 		_logger.info(raw_tax)
+		# 		_logger.info((tax_table_exemption[table-1 if table-1 > 0 else 1][0]))
+		# 		_logger.info((raw_tax * tax_table_exemption[table-1 if table-1 > 0 else 1][1]))
+		# 		final_tax = tax_table_exemption[table-1 if table-1 > 0 else 1][0] + (raw_tax * tax_table_exemption[table-1 if table-1 > 0 else 1][1])		
+		# 		return final_tax
+
+
+		# var1 = TaxableIncome
+		# if 1 < var1 <  10417:
+		# 	result = 0
+		# elif 10417 <= var1 < 16667:
+		# 	result = -(((var1 - 10417) * 0.20) + 0)
+		# elif 16667 <= var1 < 33333:
+		# 	result = -(((var1 - 16667) * 0.25) + 1250)
+		# elif 33333 <= var1 < 83333:
+		# 	result = -(((var1 - 33333) * 0.30) + 5416.67)
+		# elif 83333 <= var1 < 333333:
+		# 	result = -(((var1 - 83333 ) * 0.32) + 20416.67)
+		# elif 333333 <= var1:
+		# 	result = -(((var1 - 333333) * 0.35) + 100416.67)
+
+		# var1 = TaxableIncome
+		if 1 < amount <  10417:
+			return 0
+		elif 10417 <= amount < 16667:
+			return (((amount - 10417) * 0.20) + 0)
+		elif 16667 <= amount < 33333:
+			return (((amount - 16667) * 0.25) + 1250)
+		elif 33333 <= amount < 83333:
+			return (((amount - 33333) * 0.30) + 5416.67)
+		elif 83333 <= amount < 333333:
+			return (((amount - 83333 ) * 0.32) + 20416.67)
+		elif 333333 <= amount:
+			return (((amount - 333333) * 0.35) + 100416.67)
+
+
+		# if amount < 10417:
+		# 	return 0
+		# elif amount <= 10417 and amount < 16667:
+		# 	return (((amount - 10417) * 0.20) + 0)
+		# elif amount <= 16667 and amount < 33333:
+		# 	return (((amount - 16667) * 0.25) + 1250)
+		# elif amount <= 33333 and amount < 83333:
+		# 	return (((amount - 33333) * 0.30) + 5416.67)
+		# elif amount <= 83333 and amount < 333333:
+		# 	return (((amount - 83333 ) * 0.32) + 20416.67)
+		# elif amount <= 333333:
+		# 	return (((amount - 333333) * 0.35) + 100416.67)
 
 	@api.multi
 	def action_payslip_done(self):
@@ -1625,41 +1669,57 @@ class Contracts(models.Model):
 		#self.sss_contri
 	@api.model
 	def get_phicContribution(self, amount=0.00):
-		contri_tabe = {
-			1:[8000.00, 999.99],
-			2:[9000.00, 999.99],
-			3:[10000.00, 999.99],
-			4:[11000.00, 999.99],
-			5:[12000.00, 999.99],
-			6:[13000.00, 999.99],
-			7:[14000.00, 999.99],
-			8:[15000.00, 999.99],
-			9:[16000.00, 999.99],
-			10:[17000.00, 999.99],
-			11:[18000.00, 999.99],
-			12:[19000.00, 999.99],
-			13:[20000.00, 999.99],
-			14:[21000.00, 999.99],
-			15:[22000.00, 999.99],
-			16:[23000.00, 999.99],
-			17:[24000.00, 999.99],
-			18:[25000.00, 999.99],
-			19:[26000.00, 999.99],
-			20:[27000.00, 999.99],
-			21:[28000.00, 999.99],
-			22:[29000.00, 999.99],
-			23:[30000.00, 999.99],
-			24:[31000.00, 999.99],
-			25:[32000.00, 999.99],
-			26:[33000.00, 999.99],
-			27:[34000.00, 999.99],
-			28:[35000.00, 999.99],
-		}
-		for contri in contri_tabe:
-			if amount <= (contri_tabe[contri][0] + contri_tabe[contri][1]):
-				return round(contri_tabe[contri][0] * .0125,1)
-			elif amount > 35000.00:
-				return round(contri_tabe[28][0] * .0125,1)
+		# contri_tabe = {
+		# 	1:[8000.00, 999.99],
+		# 	2:[9000.00, 999.99],
+		# 	3:[10000.00, 999.99],
+		# 	4:[11000.00, 999.99],
+		# 	5:[12000.00, 999.99],
+		# 	6:[13000.00, 999.99],
+		# 	7:[14000.00, 999.99],
+		# 	8:[15000.00, 999.99],
+		# 	9:[16000.00, 999.99],
+		# 	10:[17000.00, 999.99],
+		# 	11:[18000.00, 999.99],
+		# 	12:[19000.00, 999.99],
+		# 	13:[20000.00, 999.99],
+		# 	14:[21000.00, 999.99],
+		# 	15:[22000.00, 999.99],
+		# 	16:[23000.00, 999.99],
+		# 	17:[24000.00, 999.99],
+		# 	18:[25000.00, 999.99],
+		# 	19:[26000.00, 999.99],
+		# 	20:[27000.00, 999.99],
+		# 	21:[28000.00, 999.99],
+		# 	22:[29000.00, 999.99],
+		# 	23:[30000.00, 999.99],
+		# 	24:[31000.00, 999.99],
+		# 	25:[32000.00, 999.99],
+		# 	26:[33000.00, 999.99],
+		# 	27:[34000.00, 999.99],
+		# 	28:[35000.00, 999.99],
+		# }
+		# for contri in contri_tabe:
+		# 	if amount <= (contri_tabe[contri][0] + contri_tabe[contri][1]):
+		# 		return round(contri_tabe[contri][0] * .0125,1)
+		# 	elif amount > 35000.00:
+		# 		return round(contri_tabe[28][0] * .0125,1)
+
+
+		# var1 = contract.wage
+		# if 0 < var1 < 10000:
+		# 	result = -((var1 * 0.0275) / 2)
+		# elif var1 >= 10000.01 and var1 <= 39999.99:
+		# 	result = -((var1 * 0.0275) / 2)
+		# elif var1 >= 40000:
+		# 	result = -(1100 / 2)
+
+		if amount < 10000:
+			return ((amount * 0.0275))
+		elif amount >= 10000.01 and amount <= 39999.99:
+			return ((amount * 0.0275))
+		elif amount >= 40000:
+			return (1100)
 
 	@api.model
 	def get_ssscontribution(self, amount=0.00):
